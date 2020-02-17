@@ -15,6 +15,7 @@ class TheMovieDatabaseAPI {
     return TheMovieDatabaseAPI.fetchMovie(movieId)
   }
   static fetchMovie(movieId) {
+    console.log("Movie ID: ", movieId);
     const url = TheMovieDatabaseAPI.constructUrl(`movie/${movieId}`)
     return fetch(url)
       .then(res => res.json())
