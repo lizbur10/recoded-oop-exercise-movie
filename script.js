@@ -33,7 +33,26 @@ function renderMovie(movie) {
 }
 
 function renderActors(actors) {
-  actors.forEach(actor => {
-    console.log(actor);
+  const actorList = document.getElementById('actors');
+  actors.slice(0,4).forEach(actor => {
+    console.log(actor.profile_path);
+    const li = document.createElement('li');
+    li.className = 'col-md-3';
+    const imgDiv = document.createElement('div');
+    imgDiv.className = 'row';
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'row';
+    const image = document.createElement('img');
+    if (actor.profile_path) {
+      image.src = `${PROFILE_BASE_URL}/${actor.profile_path}` //check this - just guessing
+    }
+    const actorName = document.createElement('h3');
+    actorName.innerHTML = actor.name;
+
+    actorList.appendChild(li);
+    li.appendChild(imgDiv);
+    imgDiv.appendChild(image);
+    li.appendChild(nameDiv);
+    nameDiv.appendChild(actorName);
   })
 }
