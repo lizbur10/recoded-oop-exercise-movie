@@ -1,7 +1,7 @@
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3' // full url for movie add 'movie/<movieId>?api_key=542003918769df50083a13c415bbc602'
-                                                      // full url for actors add 'movie/${movieId}/credits?api_key=542003918769df50083a13c415bbc602'
-const PROFILE_BASE_URL = 'http://image.tmdb.org/t/p/w185' 
-const BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780' // full url add '/<backdrop_path>' (backdrop_path from JSON)
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3'        // full url for movie add 'movie/<movieId>?api_key=542003918769df50083a13c415bbc602'
+                                                            // full url for actors add 'movie/${movieId}/credits?api_key=542003918769df50083a13c415bbc602'
+const PROFILE_BASE_URL = 'http://image.tmdb.org/t/p/w185'   // full url add '/<profile_path>' (from actor JSON)
+const BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'  // full url add '/<backdrop_path>' (from movie JSON)
 
 document.addEventListener('DOMContentLoaded', autorun);
 
@@ -35,24 +35,16 @@ function renderMovie(movie) {
 function renderActors(actors) {
   const actorList = document.getElementById('actors');
   actors.slice(0,4).forEach(actor => {
-    console.log(actor.profile_path);
-    const li = document.createElement('li');
-    li.className = 'col-md-3';
-    const imgDiv = document.createElement('div');
-    imgDiv.className = 'row';
-    const nameDiv = document.createElement('div');
-    nameDiv.className = 'row';
-    const image = document.createElement('img');
-    if (actor.profile_path) {
-      image.src = `${PROFILE_BASE_URL}/${actor.profile_path}` //check this - just guessing
-    }
-    const actorName = document.createElement('h3');
-    actorName.innerHTML = actor.name;
-
-    actorList.appendChild(li);
-    li.appendChild(imgDiv);
-    imgDiv.appendChild(image);
-    li.appendChild(nameDiv);
-    nameDiv.appendChild(actorName);
+    const imageSrc = `${PROFILE_BASE_URL}/${actor.profile_path}`
+    actorList.insertAdjacentHTML('beforeend', `
+      <li class = 'col-md-3'>
+        <div class='row'>
+          <img src="${imageSrc}">
+        </div>
+        <div class='row'>
+          <h3>${actor.name}</h3>
+        </div>
+      </li>
+    `)
   })
 }
