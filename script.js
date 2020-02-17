@@ -6,16 +6,26 @@ const BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'  // full url add '/<b
 document.addEventListener('DOMContentLoaded', autorun);
 
 function autorun() {
-  const movieId = 534;
-  const apiKey = '542003918769df50083a13c415bbc602';
-  fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${apiKey}`)
+  // const movieId = 534; //Terminator Salvation
+  const movieId = 1250; //Ghost Rider
+  const url = constructUrl(`movie/${movieId}`);
+  fetch(url)
     .then(resp => resp.json())
     .then(json => {
       renderMovie(json);
-      fetch(`${TMDB_BASE_URL}/movie/${movieId}/credits?api_key=${apiKey}`)
-        .then(actorResp => actorResp.json())
-        .then(actorJson => renderActors(actorJson.cast))
+      fetchActors(movieId);
     })
+}
+
+function constructUrl(path) {
+  return `${TMDB_BASE_URL}/${path}?api_key=542003918769df50083a13c415bbc602`;
+}
+
+function fetchActors(movieId) {
+  const url = constructUrl(`movie/${movieId}/credits`);
+  fetch(url)
+    .then(actorResp => actorResp.json())
+    .then(actorJson => renderActors(actorJson.cast))
 }
 
 function renderMovie(movie) {
@@ -28,7 +38,7 @@ function renderMovie(movie) {
   movieBackdrop.src = `${BACKDROP_BASE_URL}/${movie.backdrop_path}`;
   movieTitle.innerHTML = movie.title;
   movieReleaseDate.innerHTML = movie.release_date;
-  movieRuntime.innerHTML = movie.runtime;
+  movieRuntime.innerHTML = movie.runtime + ' minutes';
   movieOverview.innerHTML = movie.overview;
 }
 
