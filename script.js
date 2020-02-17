@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', autorun);
 
 function autorun() {
   // const movieId = 534; //Terminator Salvation
-  const movieId = 1250; //Ghost Rider
+  // const movieId = 1250; //Ghost Rider
+  const movieId =  3034; //Young Frankenstein
   const url = constructUrl(`movie/${movieId}`);
   fetch(url)
     .then(resp => resp.json())
