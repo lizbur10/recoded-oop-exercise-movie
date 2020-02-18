@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", autorun);
 function autorun() {
-  const page = new Page()
+  // const page = new Page()
   TheMovieDatabaseAPI.fetchRandomMovie()
     .then(movie => {
       Page.renderMovie(movie)
