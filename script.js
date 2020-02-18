@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', autorun);
 function autorun() {
   // const movieId = 534; //Terminator Salvation
   // const movieId = 1250; //Ghost Rider
-  const movieId =  3034; //Young Frankenstein
-  APIService.fetchMovie(movieId)
+  // const movieId =  3034; //Young Frankenstein
+  APIService.fetchRandomMovie()
     .then(movie => {
       Page.renderMovieSection(movie)
       return APIService.fetchActors(movie)
@@ -35,6 +35,20 @@ class APIService {
       .then(json => new Movie(json))
   }
 
+  static fetchRandomMovie() {
+    const movieId = Math.ceil(Math.random() * 10000);
+    let foundMovie;
+    return APIService.fetchMovie(movieId)
+      .then(movie => {
+        console.log(movie.title);
+        if (!movie.title) {
+          this.fetchRandomMovie();
+        } else {
+          return movie;
+        }
+      })
+  }
+
   static constructUrl(path) {
     return `${TMDB_BASE_URL}/${path}?api_key=542003918769df50083a13c415bbc602`;
   }
@@ -46,6 +60,15 @@ class APIService {
   }
 
 } //end APIService
+
+class Page {
+  static renderMovieSection(movie) {
+    MovieSection.renderMovie(movie);
+  }
+  static renderActorsSection(actors) {
+    ActorsSection.renderActors(actors);
+  }
+} 
 
 class Movie {
   constructor(json) {
@@ -65,47 +88,40 @@ class Actor {
   }
 }
 
-class Page {
-  static renderMovieSection(movie) {
-    // MovieSection.render(movie);
-    renderMovie(movie)
+class MovieSection {
+  static renderMovie(movie) {
+    const movieBackdrop = document.getElementById('movie-backdrop');
+    const movieTitle = document.getElementById('movie-title');
+    const movieReleaseDate = document.getElementById('movie-release-date');
+    const movieRuntime = document.getElementById('movie-runtime');
+    const movieOverview = document.getElementById('movie-overview');
+  
+    movieBackdrop.src = movie.backdropPath;
+    movieTitle.innerHTML = movie.title;
+    movieReleaseDate.innerHTML = movie.releaseDate;
+    movieRuntime.innerHTML = movie.runtime;
+    movieOverview.innerHTML = movie.overview;
   }
-  static renderActorsSection(actors) {
-    // ActorsSection.render(actors);
-    renderActors(actors)
+  
+}
+
+class ActorsSection {
+  static renderActors(actors) {
+    actors.forEach(actor => this.renderActor(actor));
   }
-} 
-
-
-function renderMovie(movie) {
-  const movieBackdrop = document.getElementById('movie-backdrop');
-  const movieTitle = document.getElementById('movie-title');
-  const movieReleaseDate = document.getElementById('movie-release-date');
-  const movieRuntime = document.getElementById('movie-runtime');
-  const movieOverview = document.getElementById('movie-overview');
-
-  movieBackdrop.src = movie.backdropPath;
-  movieTitle.innerHTML = movie.title;
-  movieReleaseDate.innerHTML = movie.releaseDate;
-  movieRuntime.innerHTML = movie.runtime;
-  movieOverview.innerHTML = movie.overview;
+  
+  static renderActor(actor) {
+    const actorList = document.getElementById('actors');
+    actorList.insertAdjacentHTML('beforeend', `
+      <li class = 'col-md-3'>
+        <div class='row'>
+          <img src="${actor.imageSrc}">
+        </div>
+        <div class='row'>
+          <h3>${actor.name}</h3>
+        </div>
+      </li>
+    `)
+  }
 }
 
-
-function renderActors(actors) {
-  actors.forEach(actor => renderActor(actor));
-}
-
-function renderActor(actor) {
-  const actorList = document.getElementById('actors');
-  actorList.insertAdjacentHTML('beforeend', `
-    <li class = 'col-md-3'>
-      <div class='row'>
-        <img src="${actor.imageSrc}">
-      </div>
-      <div class='row'>
-        <h3>${actor.name}</h3>
-      </div>
-    </li>
-  `)
-}
