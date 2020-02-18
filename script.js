@@ -9,25 +9,54 @@ function autorun() {
   // const movieId = 534; //Terminator Salvation
   // const movieId = 1250; //Ghost Rider
   const movieId =  3034; //Young Frankenstein
-  const url = constructUrl(`movie/${movieId}`);
-  fetch(url)
-    .then(resp => resp.json())
-    .then(json => {
-      renderMovie(json);
-      fetchActors(movieId);
-    })
+  const page = new Page();
+  const movie = APIService.fetchMovie(movieId); // returns a movie instance
 }
 
-function constructUrl(path) {
-  return `${TMDB_BASE_URL}/${path}?api_key=542003918769df50083a13c415bbc602`;
-}
+//CLASSES:
+//  APIService - takes care of fetches and related functions
+//  Movie - creates movie instance with needed attributes (needs a constructor)
+//  Actor - creates actor instances with needed attributes (needs a constructor)
+//  Page - Has a section for movie and actors and calls the corresponding methods 
+//  MovieSection - grabs the needed html elements and renders the movie on the page 
+    // Will include a static render method
+//  ActorsSection - Takes the first four actors and passes them to RenderActor
+    // Will include two static render methods
 
-function fetchActors(movieId) {
-  const url = constructUrl(`movie/${movieId}/credits`);
-  fetch(url)
-    .then(actorResp => actorResp.json())
-    .then(actorJson => renderActors(actorJson.cast))
-}
+class APIService {
+
+  static fetchMovie(movieId) {
+    fetch(this.constructUrl(`movie/${movieId}`))
+      .then(resp => resp.json())
+      .then(json => {
+        renderMovie(json);
+        this.fetchActors(movieId);
+      })
+      //.then(json => new Movie(json))
+  }
+
+  static constructUrl(path) {
+    return `${TMDB_BASE_URL}/${path}?api_key=542003918769df50083a13c415bbc602`;
+  }
+
+  static fetchActors(movieId) {
+    fetch(this.constructUrl(`movie/${movieId}/credits`))
+      .then(actorResp => actorResp.json())
+      .then(actorJson => renderActors(actorJson.cast.slice(0,4)));
+  }
+
+} //end APIService
+
+
+class Page {
+  static MovieSection(movie) {
+    renderMovie(movie);
+  }
+  static ActorsSection(movie) {
+    renderActors(movie.actors);
+  }
+} 
+
 
 function renderMovie(movie) {
   const movieBackdrop = document.getElementById('movie-backdrop');
@@ -43,19 +72,22 @@ function renderMovie(movie) {
   movieOverview.innerHTML = movie.overview;
 }
 
+
 function renderActors(actors) {
+  actors.forEach(actor => renderActor(actor));
+}
+
+function renderActor(actor) {
   const actorList = document.getElementById('actors');
-  actors.slice(0,4).forEach(actor => {
-    const imageSrc = `${PROFILE_BASE_URL}/${actor.profile_path}`
-    actorList.insertAdjacentHTML('beforeend', `
-      <li class = 'col-md-3'>
-        <div class='row'>
-          <img src="${imageSrc}">
-        </div>
-        <div class='row'>
-          <h3>${actor.name}</h3>
-        </div>
-      </li>
-    `)
-  })
+  const imageSrc = `${PROFILE_BASE_URL}/${actor.profile_path}`
+  actorList.insertAdjacentHTML('beforeend', `
+    <li class = 'col-md-3'>
+      <div class='row'>
+        <img src="${imageSrc}">
+      </div>
+      <div class='row'>
+        <h3>${actor.name}</h3>
+      </div>
+    </li>
+  `)
 }
