@@ -1,8 +1,9 @@
 // To add actors:
-//  add fetchActors to APIService
-//  call fetchActors from APP
-//  create Actor model
-//  add renderActors function to Page class
+//  add fetchActors to APIService X
+//  call fetchActors from APP 
+//  create Actor model X
+//  add renderActors function to Page class X
+// add renderActor
 
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3'  //https://api.themoviedb.org/3/movie/${movieId}
@@ -13,8 +14,14 @@ const BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'
 class App {
   static run() {
     APIService.fetchMovie(534)
-      .then(movie => Page.renderMovie(movie))
+      .then(movie => {
         // add call to fetchActors, passing movie
+        Page.renderMovie(movie)
+        APIService.fetchActors(movie)
+          .then(actors => {
+            console.log(actors);
+            Page.renderActors(actors)
+      })})
     }
 }
 
@@ -28,7 +35,11 @@ class APIService {
   }
 
   static fetchActors(movie) {
-    // write code to fetch the actors    
+    // write code to fetch the actors 
+    const url = APIService._constructUrl(`movie/${movie.id}/credits`)
+    return fetch(url)
+      .then(res => res.json())
+      .then(json => json.cast.slice(0,4).map(actor => new Actor(actor)))
   }
 
   static  _constructUrl(path) {
@@ -51,17 +62,34 @@ class Page {
     Page.overview.innerText = movie.overview
   }
 
+  static actorsList = document.getElementById('actors');
+
   static renderActors(actors) {
     // add code to render Actors
     // Questions: 
     //    how do we handle selecting the first four?
     //    how do we handle rendering the individual actors?
+    actors.forEach(actor => this.renderActor(actor));
   }
+
+  static renderActor(actor) {
+    this.actorsList.insertAdjacentHTML('beforeend', `
+      <li class="col-md-3">
+        <div class="row">
+          <img src="${actor.profilePath}"/>
+        </div>
+        <div class="row">
+          <h3>${actor.name}</h3>
+        </div>
+      </li>
+    `)  }
 }
 
 class Actor {
   constructor(json) {
     //add code to create Actor
+    this.name = json.name
+    this.profilePath = PROFILE_BASE_URL + json.profile_path 
   }
 }
 
