@@ -1,4 +1,12 @@
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3'
+// To add actors:
+//  add fetchActors to APIService
+//  call fetchActors from APP
+//  create Actor model
+//  add renderActors function to Page class
+
+
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3'  //https://api.themoviedb.org/3/movie/${movieId}
+                                                      //https://api.themoviedb.org/3/movie/${movieId}/credits
 const PROFILE_BASE_URL = 'http://image.tmdb.org/t/p/w185'
 const BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'
 
@@ -6,7 +14,8 @@ class App {
   static run() {
     APIService.fetchMovie(534)
       .then(movie => Page.renderMovie(movie))
-  }
+        // add call to fetchActors, passing movie
+    }
 }
 
 class APIService {
@@ -16,6 +25,10 @@ class APIService {
     return fetch(url)
       .then(res => res.json())
       .then(json => new Movie(json))
+  }
+
+  static fetchActors(movie) {
+    // write code to fetch the actors    
   }
 
   static  _constructUrl(path) {
@@ -36,6 +49,19 @@ class Page {
     Page.releaseDate.innerText = movie.releaseDate
     Page.runtime.innerText = movie.runtime + " minutes"
     Page.overview.innerText = movie.overview
+  }
+
+  static renderActors(actors) {
+    // add code to render Actors
+    // Questions: 
+    //    how do we handle selecting the first four?
+    //    how do we handle rendering the individual actors?
+  }
+}
+
+class Actor {
+  constructor(json) {
+    //add code to create Actor
   }
 }
 
