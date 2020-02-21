@@ -47,6 +47,7 @@ class APIService {
 }
 
 class Page {
+  static container = document.getElementById('container');
   static renderMovieSection(movie) {
     MovieSection.renderMovie(movie)
   }
@@ -56,20 +57,24 @@ class Page {
 }
 
 class MovieSection {
-  static BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'
-  static backdrop = document.getElementById('movie-backdrop')
-  static title = document.getElementById('movie-title')
-  static releaseDate = document.getElementById('movie-release-date')
-  static runtime = document.getElementById('movie-runtime')
-  static overview = document.getElementById('movie-overview')
-
   static renderMovie(movie) {
-    this.backdrop.src = MovieSection.BACKDROP_BASE_URL + movie.backdropPath
-    this.title.innerText = movie.title
-    this.releaseDate.innerText = movie.releaseDate
-    this.runtime.innerText = movie.runtime + " minutes"
-    this.overview.innerText = movie.overview
-  }  
+    Page.container.innerHTML = `
+      <div class="row">
+        <div class="col-md-4">
+          <img id="movie-backdrop" src=${movie.backdropUrl}> 
+        </div>
+        <div class="col-md-8">
+          <h2 id="movie-title">${movie.title}</h2>
+          <p id="movie-release-date">${movie.releaseDate}</p>
+          <p id="movie-runtime">${movie.runtime}</p>
+          <h3>Overview:</h3>
+          <p id="movie-overview">${movie.overview}</p>
+        </div>
+      </div>
+      <h3>Actors:</h3>
+    `
+  }
+
 }
 
 class ActorsSection {
@@ -80,11 +85,15 @@ class ActorsSection {
     // Questions: 
     //    how do we handle selecting the first four?
     //    how do we handle rendering the individual actors?
-    actors.forEach(actor => this.renderActor(actor));
+    const actorsContainer = document.createElement('ul');
+    actorsContainer.setAttribute('class', "list-unstyled")
+    actorsContainer.setAttribute('id', 'actors');
+    Page.container.appendChild(actorsContainer);
+      actors.forEach(actor => this.renderActor(actor,actorsContainer));
   }
 
-  static renderActor(actor) {
-    this.actorsList.insertAdjacentHTML('beforeend', `
+  static renderActor(actor, actorsContainer) {
+    actorsContainer.insertAdjacentHTML('beforeend', `
       <li class="col-md-3">
         <div class="row">
           <img src="${actor.profilePath}"/>
@@ -108,6 +117,8 @@ class Actor {
 }
 
 class Movie {
+  static BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'
+
   constructor(json) {
     this.id = json.id
     this.title = json.title
@@ -115,6 +126,10 @@ class Movie {
     this.runtime = json.runtime
     this.overview = json.overview
     this.backdropPath = json.backdrop_path
+  }
+
+  get backdropUrl() {
+    return this.backdropPath ? Movie.BACKDROP_BASE_URL + this.backdropPath : ""
   }
 }
 
