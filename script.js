@@ -123,7 +123,7 @@ class Movie {
     this.id = json.id
     this.title = json.title
     this.releaseDate = json.release_date
-    this.runtime = json.runtime
+    this.runtime = json.runtime + " minutes"
     this.overview = json.overview
     this.backdropPath = json.backdrop_path
   }
