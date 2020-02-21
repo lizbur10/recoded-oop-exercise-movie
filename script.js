@@ -1,4 +1,4 @@
-// To add actors:
+// To add home page:
 //  modify class App to automatically call fetchMovies insetad of fetchMovie and fetchActors
 //  add fetchMovies to APIService X
 //  add renderMovies function to Page class (and change name of Page class)
@@ -14,10 +14,39 @@ class App {
   }
 }
 
+class SearchBox {
+  static render() {
+    const searchForm = document.createElement('form');
+    const searchInput = document.createElement('input');
+    searchInput.setAttribute("type", "text");
+    searchInput.setAttribute("placeholder", "Search");
+    const submitButton = document.createElement('input');
+    submitButton.setAttribute("type", "submit");
+    submitButton.addEventListener("click", function(e) {
+      e.preventDefault();
+      APIService.fetchSearchResults(searchInput.value)
+      .then(movies => HomePage.renderMovies(movies));
+    })
+
+    HomePage.container.appendChild(searchForm);
+    searchForm.appendChild(searchInput);
+    searchForm.appendChild(submitButton);    
+  }
+}
+
 class APIService {
 
   static TMDB_BASE_URL = 'https://api.themoviedb.org/3'  //https://api.themoviedb.org/3/movie/${movieId}
                                                       //https://api.themoviedb.org/3/movie/${movieId}/credits
+
+
+  static fetchSearchResults(query) {
+    const urlStart = APIService._constructUrl('search/movie');
+    const url = urlStart + `&query=${encodeURI(query)}`;
+    return fetch(url)
+    .then(res => res.json())
+    .then(json => json.results.map(movie => new Movie(movie)));
+  }
 
   // create fetchMovies method
   static fetchMovies() {
@@ -52,9 +81,11 @@ class APIService {
 // Add class HomePage
 class HomePage {
 // add static renderMovies method
-  static moviesList = document.getElementById('movies-list');
+  static container = document.getElementById('container');
 
   static renderMovies(movies) {
+    HomePage.container.innerHTML = "";
+    SearchBox.render();
     movies.forEach(movie => {
       // this.moviesList.insertAdjacentHTML('beforeend', `
       //   <img src=${movie.backdropUrl}>
@@ -67,7 +98,7 @@ class HomePage {
       movieTitle.innerHTML = movie.title;
       image.setAttribute('src', movie.backdropUrl);
       image.addEventListener('click', function(){
-        HomePage.moviesList.innerHTML = "";
+        HomePage.container.innerHTML = "";
         APIService.fetchMovie(movie.id)
         .then(movie => {
           MoviePage.renderMovieSection(movie)
@@ -78,7 +109,7 @@ class HomePage {
       })
 
       })
-      this.moviesList.appendChild(movieDiv);
+      this.container.appendChild(movieDiv);
       movieDiv.appendChild(image);
       movieDiv.appendChild(movieTitle);
     })
@@ -88,6 +119,7 @@ class HomePage {
 
 // change class name to MoviePage
 class MoviePage {
+  static container = document.getElementById('container');
   static renderMovieSection(movie) {
     MovieSection.renderMovie(movie)
   }
@@ -98,34 +130,43 @@ class MoviePage {
 
 
 class MovieSection {
-  static backdrop = document.getElementById('movie-backdrop')
-  static title = document.getElementById('movie-title')
-  static releaseDate = document.getElementById('movie-release-date')
-  static runtime = document.getElementById('movie-runtime')
-  static overview = document.getElementById('movie-overview')
-
   static renderMovie(movie) {
-    this.backdrop.src = movie.backdropUrl
-    this.title.innerText = movie.title
-    this.releaseDate.innerText = movie.releaseDate
-    this.runtime.innerText = movie.runtime + " minutes"
-    this.overview.innerText = movie.overview
-  }  
+    SearchBox.render();
+    MoviePage.container.innerHTML = `
+      <div class="row">
+        <div class="col-md-4">
+          <img id="movie-backdrop" src=${movie.backdropUrl}> 
+        </div>
+        <div class="col-md-8">
+          <h2 id="movie-title">${movie.title}</h2>
+          <p id="movie-release-date">${movie.releaseDate}</p>
+          <p id="movie-runtime">${movie.runtime}</p>
+          <h3>Overview:</h3>
+          <p id="movie-overview">${movie.overview}</p>
+        </div>
+      </div>
+      <h3>Actors:</h3>
+    `
+  }
 }
 
 class ActorsSection {
-  static actorsList = document.getElementById('actors');
 
   static renderActors(actors) {
     // add code to render Actors
     // Questions: 
     //    how do we handle selecting the first four?
     //    how do we handle rendering the individual actors?
-    actors.forEach(actor => this.renderActor(actor));
+    const actorsContainer = document.createElement('ul');
+    actorsContainer.setAttribute('class', "list-unstyled")
+    actorsContainer.setAttribute('id', 'actors');
+    console.log(actorsContainer);
+    MoviePage.container.appendChild(actorsContainer);
+    actors.forEach(actor => this.renderActor(actor, actorsContainer));
   }
 
-  static renderActor(actor) {
-    this.actorsList.insertAdjacentHTML('beforeend', `
+  static renderActor(actor, actorsContainer) {
+    actorsContainer.insertAdjacentHTML('beforeend', `
       <li class="col-md-3">
         <div class="row">
           <img src="${actor.profilePath}"/>
@@ -156,13 +197,13 @@ class Movie {
     this.id = json.id
     this.title = json.title
     this.releaseDate = json.release_date
-    this.runtime = json.runtime
+    this.runtime = json.runtime + " minutes"
     this.overview = json.overview
     this.backdropPath = json.backdrop_path
   }
 
   get backdropUrl() {
-    return Movie.BACKDROP_BASE_URL + this.backdropPath;
+    return this.backdropPath ? Movie.BACKDROP_BASE_URL + this.backdropPath : ""
   }
 }
 
