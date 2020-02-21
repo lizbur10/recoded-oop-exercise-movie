@@ -1,30 +1,33 @@
 // To add actors:
-//  add fetchActors to APIService X
-//  call fetchActors from APP 
-//  create Actor model X
-//  add renderActors function to Page class X
-//  add renderActor
+//  modify class App to automatically call fetchMovies insetad of fetchMovie and fetchActors
+//  add fetchMovies to APIService X
+//  add renderMovies function to Page class (and change name of Page class)
+//  add click handler to each movie on the home page to render the MoviePage
 
 
 class App {
   static run() {
-    APIService.fetchMovie(534)
-      .then(movie => {
-        // add call to fetchActors, passing movie
-        Page.renderMovieSection(movie)
-        APIService.fetchActors(movie)
-          .then(actors => {
-            console.log(actors);
-            Page.renderActorsSection(actors)
-        })
-      })
-    }
+    // Add a call to fetchMovies
+    APIService.fetchMovies()
+    .then(movies => HomePage.renderMovies(movies));
+
+  }
 }
 
 class APIService {
 
   static TMDB_BASE_URL = 'https://api.themoviedb.org/3'  //https://api.themoviedb.org/3/movie/${movieId}
                                                       //https://api.themoviedb.org/3/movie/${movieId}/credits
+
+  // create fetchMovies method
+  static fetchMovies() {
+    const url = APIService._constructUrl(`movie/popular`)
+    return fetch(url)
+      .then(res => res.json())
+      .then(json => json.results.map(movie => new Movie(movie)));
+  }
+  //  use map to create movie instances
+
 
   static fetchMovie(movieId) {
     const url = APIService._constructUrl(`movie/${movieId}`)
@@ -46,7 +49,45 @@ class APIService {
   }
 }
 
-class Page {
+// Add class HomePage
+class HomePage {
+// add static renderMovies method
+  static moviesList = document.getElementById('movies-list');
+
+  static renderMovies(movies) {
+    movies.forEach(movie => {
+      // this.moviesList.insertAdjacentHTML('beforeend', `
+      //   <img src=${movie.backdropUrl}>
+      //   <h3>${movie.title}</h3>
+      // `)
+      const movieDiv = document.createElement('div');
+      const image = document.createElement('img');
+      const movieTitle = document.createElement('h3');
+
+      movieTitle.innerHTML = movie.title;
+      image.setAttribute('src', movie.backdropUrl);
+      image.addEventListener('click', function(){
+        HomePage.moviesList.innerHTML = "";
+        APIService.fetchMovie(movie.id)
+        .then(movie => {
+          MoviePage.renderMovieSection(movie)
+          APIService.fetchActors(movie)
+          .then(actors => {
+              MoviePage.renderActorsSection(actors)
+          })
+      })
+
+      })
+      this.moviesList.appendChild(movieDiv);
+      movieDiv.appendChild(image);
+      movieDiv.appendChild(movieTitle);
+    })
+  }
+}
+
+
+// change class name to MoviePage
+class MoviePage {
   static renderMovieSection(movie) {
     MovieSection.renderMovie(movie)
   }
@@ -55,8 +96,8 @@ class Page {
   }
 }
 
+
 class MovieSection {
-  static BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'
   static backdrop = document.getElementById('movie-backdrop')
   static title = document.getElementById('movie-title')
   static releaseDate = document.getElementById('movie-release-date')
@@ -64,7 +105,7 @@ class MovieSection {
   static overview = document.getElementById('movie-overview')
 
   static renderMovie(movie) {
-    this.backdrop.src = MovieSection.BACKDROP_BASE_URL + movie.backdropPath
+    this.backdrop.src = movie.backdropUrl
     this.title.innerText = movie.title
     this.releaseDate.innerText = movie.releaseDate
     this.runtime.innerText = movie.runtime + " minutes"
@@ -97,6 +138,7 @@ class ActorsSection {
   }
 }
 
+
 class Actor {
   static PROFILE_BASE_URL = 'http://image.tmdb.org/t/p/w185'
 
@@ -108,6 +150,8 @@ class Actor {
 }
 
 class Movie {
+  static BACKDROP_BASE_URL = 'http://image.tmdb.org/t/p/w780'
+
   constructor(json) {
     this.id = json.id
     this.title = json.title
@@ -115,6 +159,10 @@ class Movie {
     this.runtime = json.runtime
     this.overview = json.overview
     this.backdropPath = json.backdrop_path
+  }
+
+  get backdropUrl() {
+    return Movie.BACKDROP_BASE_URL + this.backdropPath;
   }
 }
 
